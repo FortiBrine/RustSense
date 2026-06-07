@@ -4,13 +4,12 @@ version = 4
 
 [[package]]
 name = "RustSense"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bytemuck",
  "env_logger",
  "hidapi",
  "log",
- "spin_sleep",
  "spin_sleep_util",
 ]
 

@@ -41,7 +41,7 @@ jobs:
         run: cp target/release/RustSense ./rustsense_linux
       - name: Prepare artifacts (Windows)
         if: matrix.os == 'windows-latest'
-        run: copy target\release\RustSense.exe .\rustsense_windows.exe
+        run: copy target\release\RustSense.exe .\rustsense-windows.exe
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
