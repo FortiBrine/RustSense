@@ -1,0 +1,64 @@
+name: build-and-release.yml
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: rustsense_linux
+            asset_name: rustsense-linux-amd64
+          - os: windows-latest
+            artifact_name: rustsense-windows.exe
+            asset_name: rustsense-windows-amd64.exe
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Build release
+        run: cargo build --release
+      - name: Prepare artifacts (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cp target/release/RustSense ./rustsense_linux
+      - name: Prepare artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        run: copy target\release\RustSense.exe .\rustsense_windows.exe
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.artifact_name }}
+  release:
+    name: Create github release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+      - name: Display structure of downloaded artifacts
+        run: ls -R artifacts
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/*
