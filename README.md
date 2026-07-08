@@ -7,7 +7,7 @@ Stream raw PCM audio from stdin to a Sony DualSense (PS5) or DualSense Edge cont
 - Rust **1.85 or newer** (edition 2024)
 - A DualSense or DualSense Edge controller connected via **USB** (Bluetooth is not supported)
 
-**Linux** — install the hidapi system library:
+On **Linux**, install the hidapi system library:
 
 ```sh
 # Debian / Ubuntu
@@ -20,7 +20,7 @@ sudo dnf install hidapi-devel
 sudo pacman -S hidapi
 ```
 
-**Windows** — no extra dependencies. `hidapi` links against `hid.dll`, which ships with Windows. A working C compiler is required for the build (MSVC via Visual Studio Build Tools, or MinGW via MSYS2).
+**Windows** needs no extra dependencies. `hidapi` links against `hid.dll`, which ships with Windows. A working C compiler is required for the build (MSVC via Visual Studio Build Tools, or MinGW via MSYS2).
 
 ## Building
 
@@ -32,7 +32,7 @@ The binary ends up at `target/release/RustSense` (Linux) or `target\release\Rust
 
 ## Connecting the controller
 
-Plug the DualSense into a USB port. Do **not** use a USB hub if you experience write errors — connect directly.
+Plug the DualSense into a USB port. Do **not** use a USB hub if you experience write errors; connect directly instead.
 
 ### Linux: grant access to the HID device
 
@@ -58,7 +58,7 @@ sudo usermod -aG plugdev $USER   # log out and back in after this
 
 ### Windows
 
-No driver installation is needed. Windows recognises the DualSense as a standard HID device automatically. Run the binary from a normal command prompt or PowerShell — no elevation required.
+No driver installation is needed. Windows recognises the DualSense as a standard HID device automatically. Run the binary from a normal command prompt or PowerShell; no elevation is required.
 
 ## Usage
 
