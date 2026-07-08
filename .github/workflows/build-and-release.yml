@@ -9,63 +9,60 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            artifact_name: rustsense_linux
-            asset_name: rustsense-linux-amd64
-          - os: windows-latest
-            artifact_name: rustsense-windows.exe
-            asset_name: rustsense-windows-amd64.exe
+  create-release:
+    name: Create github release
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions/checkout@v7
+      - name: Create release
+        uses: taiki-e/create-gh-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-linux:
+    name: Build and upload (Linux)
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libudev-dev pkg-config
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
-      - name: Build release
-        run: cargo build --release
-      - name: Prepare artifacts (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: cp target/release/RustSense ./rustsense_linux
-      - name: Prepare artifacts (Windows)
-        if: matrix.os == 'windows-latest'
-        run: copy target\release\RustSense.exe .\rustsense-windows.exe
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.asset_name }}
-          path: ${{ matrix.artifact_name }}
-  release:
-    name: Create github release
-    needs: build
+          key: x86_64-unknown-linux-gnu
+      - name: Build and upload binary
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: RustSense
+          target: x86_64-unknown-linux-gnu
+          archive: rustsense-linux-amd64
+          checksum: sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-windows:
+    name: Build and upload (Windows via zigbuild)
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
-      - name: Download all artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/checkout@v7
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: dist
-      - name: Display structure of downloaded artifacts
-        run: ls -R dist
-      - name: Create release and upload assets
-        uses: softprops/action-gh-release@v3
+          key: x86_64-pc-windows-gnu
+      - name: Build and upload binary
+        uses: taiki-e/upload-rust-binary-action@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-          files: |
-            dist/**/*
+          bin: RustSense
+          target: x86_64-pc-windows-gnu
+          build-tool: cargo-zigbuild
+          archive: rustsense-windows-amd64
+          checksum: sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
