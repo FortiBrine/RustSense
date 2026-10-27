@@ -15,6 +15,8 @@ from stdin and plays it through the headphone jack of a DualSense or
 DualSense Edge controller connected over USB.
 
 %prep
+%setup -q -c -T
+cp -a %{_sourcedir}/{src,vendor,.cargo,Cargo.toml,Cargo.lock,LICENSE-MIT,LICENSE-APACHE,README.md} .
 
 %build
 cargo build --release --offline
