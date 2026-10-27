@@ -69,7 +69,8 @@ jobs:
   sync-stable:
     name: Sync stable branch
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: [upload-linux, upload-windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: git push origin HEAD:refs/heads/stable
+      - run: git push --force origin HEAD:refs/heads/stable

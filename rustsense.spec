@@ -1,5 +1,5 @@
 Name:           rustsense
-Version:        0.1.3
+Version:        0.1.5
 Release:        0
 Summary:        Stream raw PCM audio to a Sony DualSense controller over USB HID
 License:        MIT OR Apache-2.0
